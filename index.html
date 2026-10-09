@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBT PAI Class X - SMAN 1 Mojo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Rajdhani', sans-serif; background-color: #030712; color: #f3f4f6; }
+    .font-tech { font-family: 'Orbitron', sans-serif; }
+    .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.2); }
+    .glow-effect { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+  </style>
+</head>
+<body x-data="appData()" class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+  <!-- TOP BAR / HEADER -->
+  <header class="glass-card sticky top-0 z-50 px-4 py-3 border-b border-cyan-500/30 flex justify-between items-center">
+    <div>
+      <h1 class="font-tech text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">CBT PAI X SMAN 1 MOJO</h1>
+      <p class="text-xs text-gray-400">Futuristic Assessment System</p>
+    </div>
+    <template x-if="user">
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-2 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-700" x-text="user.role.toUpperCase()"></span>
+        <button @click="logout()" class="text-xs bg-red-600/30 text-red-300 border border-red-500/40 px-2 py-1 rounded hover:bg-red-600/50">Keluar</button>
+      </div>
+    </template>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="p-4 max-w-md mx-auto w-full flex-grow">
+
+    <!-- LOGIN SCREEN -->
+    <template x-if="screen === 'login'">
+      <div class="glass-card rounded-2xl p-6 glow-effect border border-cyan-500/40">
+        <div class="text-center mb-6">
+          <div class="inline-block p-3 rounded-full bg-cyan-950/80 border border-cyan-500/50 mb-2">
+            <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457-.39-2.823-1.07-4"></path></svg>
+          </div>
+          <h2 class="font-tech text-xl text-cyan-300 font-bold">PORTAL UTAMA</h2>
+          <p class="text-xs text-gray-400">Pilih akses sesuai otorisasi akun Anda</p>
+        </div>
+
+        <div class="flex gap-2 mb-4 bg-gray-900/80 p-1 rounded-xl border border-gray-800">
+          <button @click="loginRole = 'siswa'" :class="loginRole === 'siswa' ? 'bg-cyan-600 text-white font-bold' : 'text-gray-400'" class="flex-1 py-2 rounded-lg text-sm transition-all">Siswa</button>
+          <button @click="loginRole = 'admin'" :class="loginRole === 'admin' ? 'bg-cyan-600 text-white font-bold' : 'text-gray-400'" class="flex-1 py-2 rounded-lg text-sm transition-all">Admin</button>
+        </div>
+
+        <form @submit.prevent="handleLogin()" class="space-y-4">
+          <template x-if="loginRole === 'siswa'">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Nama Lengkap</label>
+              <input type="text" x-model="form.nama" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-cyan-300 focus:outline-none focus:border-cyan-400">
+            </div>
+          </template>
+
+          <template x-if="loginRole === 'siswa'">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Kelas</label>
+              <select x-model="form.kelas" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-cyan-300 focus:outline-none focus:border-cyan-400">
+                <option value="">-- Pilih Kelas --</option>
+                <template x-for="k in kelasList" :key="k">
+                  <option :value="k" x-text="k"></option>
+                </template>
+              </select>
+            </div>
+          </template>
+
+          <template x-if="loginRole === 'siswa'">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">NISN / Password Siswa</label>
+              <input type="password" x-model="form.passSiswa" placeholder="Default: 123456" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-cyan-300 focus:outline-none focus:border-cyan-400">
+            </div>
+          </template>
+
+          <template x-if="loginRole === 'admin'">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Password Administrator</label>
+              <input type="password" x-model="form.passAdmin" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-cyan-300 focus:outline-none focus:border-cyan-400">
+            </div>
+          </template>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-tech py-3 rounded-xl font-bold border border-cyan-300/40 hover:brightness-125 transition-all">
+            AUTENTIKASI & MASUK
+          </button>
+        </form>
+      </div>
+    </template>
+
+    <!-- ADMIN PANEL -->
+    <template x-if="screen === 'admin'">
+      <div class="space-y-4">
+        <div class="glass-card rounded-2xl p-5 border border-purple-500/30">
+          <h2 class="font-tech text-lg text-purple-400 font-bold mb-3 flex items-center gap-2">
+            <span>⚙️</span> CONTROL CENTER ADMIN
+          </h2>
+
+          <div class="space-y-4">
+            <!-- Ubah Password Admin -->
+            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+              <h3 class="text-xs font-bold text-gray-300 mb-2">Ubah Password Admin</h3>
+              <div class="flex gap-2">
+                <input type="password" x-model="newAdminPass" placeholder="Password Baru" class="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2 py-1 text-xs text-cyan-300">
+                <button @click="updateAdminPass()" class="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-purple-500">Simpan</button>
+              </div>
+            </div>
+
+            <!-- Pengaturan Durasi Ujian -->
+            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+              <h3 class="text-xs font-bold text-gray-300 mb-2">Atur Waktu Ujian (Menit)</h3>
+              <div class="flex gap-2">
+                <input type="number" x-model.number="config.durasiMenit" class="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2 py-1 text-xs text-cyan-300">
+                <button @click="alert('Durasi diperbarui')" class="bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-cyan-500">Update</button>
+              </div>
+            </div>
+
+            <!-- Status Webhook -->
+            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+              <h3 class="text-xs font-bold text-gray-300 mb-1">Google Sheet Integration</h3>
+              <p class="text-[10px] text-green-400 break-all bg-black/50 p-2 rounded border border-green-900" x-text="webhookUrl"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- CONFIRMATION / START EXAM SCREEN -->
+    <template x-if="screen === 'ready'">
+      <div class="glass-card rounded-2xl p-6 text-center space-y-4 border border-cyan-500/40">
+        <h2 class="font-tech text-xl text-cyan-300 font-bold">KONFIRMASI UJIAN</h2>
+        <div class="bg-gray-900/80 p-4 rounded-xl text-left text-xs space-y-2 border border-gray-800">
+          <p><strong class="text-gray-400">Nama:</strong> <span class="text-cyan-300" x-text="user.nama"></span></p>
+          <p><strong class="text-gray-400">Kelas:</strong> <span class="text-cyan-300" x-text="user.kelas"></span></p>
+          <p><strong class="text-gray-400">Mata Pelajaran:</strong> <span class="text-cyan-300">PAI & Budi Pekerti</span></p>
+          <p><strong class="text-gray-400">Jumlah Soal:</strong> <span class="text-cyan-300">25 Nomor (HOTS)</span></p>
+          <p><strong class="text-gray-400">Alokasi Waktu:</strong> <span class="text-cyan-300" x-text="config.durasiMenit + ' Menit'"></span></p>
+        </div>
+        <button @click="startExam()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-tech py-3 rounded-xl font-bold shadow-lg shadow-teal-900/50 hover:brightness-125 transition-all">
+          MULAI PENGERJAAN
+        </button>
+      </div>
+    </template>
+
+    <!-- CBT EXAM SCREEN -->
+    <template x-if="screen === 'exam'">
+      <div class="space-y-4">
+        
+        <!-- TIMER BAR -->
+        <div class="glass-card px-4 py-2 rounded-xl flex justify-between items-center border border-cyan-500/30">
+          <span class="text-xs text-gray-400 font-bold">SISA WAKTU</span>
+          <span class="font-tech text-lg font-bold text-cyan-400" x-text="formatTime(timer)"></span>
+        </div>
+
+        <!-- QUESTION NAVIGATOR PILLS -->
+        <div class="flex gap-1.5 overflow-x-auto py-1 scrollbar-none">
+          <template x-for="(q, index) in questions" :key="q.id">
+            <button @click="currentIdx = index" 
+              :class="{
+                'bg-cyan-500 text-black font-bold border-cyan-300': currentIdx === index,
+                'bg-emerald-950 text-emerald-400 border-emerald-700': isAnswered(index) && currentIdx !== index,
+                'bg-gray-900 text-gray-400 border-gray-800': !isAnswered(index) && currentIdx !== index
+              }"
+              class="px-3 py-1.5 rounded-lg text-xs border flex-shrink-0 transition-all font-tech"
+              x-text="index + 1">
+            </button>
+          </template>
+        </div>
+
+        <!-- QUESTION CARD -->
+        <div class="glass-card rounded-2xl p-5 border border-cyan-500/30 space-y-4">
+          <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+            <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-tech" x-text="'Soal ' + (currentIdx + 1) + ' / ' + questions.length"></span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800" x-text="currentQuestion.typeLabel"></span>
+          </div>
+
+          <p class="text-sm leading-relaxed text-gray-200 font-medium" x-text="currentQuestion.prompt"></p>
+
+          <!-- TIPE 1: PILIHAN GANDA TUNGGAL (a, b, c, e) -->
+          <template x-if="currentQuestion.type === 'pg_tunggal'">
+            <div class="space-y-2 pt-2">
+              <template x-for="opt in currentQuestion.options" :key="opt.key">
+                <label @click="answers[currentQuestion.id] = opt.key" 
+                  :class="answers[currentQuestion.id] === opt.key ? 'border-cyan-400 bg-cyan-950/60 text-cyan-200' : 'border-gray-800 bg-gray-900/40 text-gray-300'"
+                  class="flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-all hover:border-gray-600">
+                  <span class="font-tech font-bold uppercase text-cyan-400" x-text="opt.key"></span>
+                  <span x-text="opt.text" class="flex-1"></span>
+                </label>
+              </template>
+            </div>
+          </template>
+
+          <!-- TIPE 2: PILIHAN GANDA KOMPLEKS (Centang banyak opsi) -->
+          <template x-if="currentQuestion.type === 'pg_kompleks'">
+            <div class="space-y-2 pt-2">
+              <p class="text-[11px] text-yellow-400/80 italic">*Pilih lebih dari satu jawaban yang benar</p>
+              <template x-for="opt in currentQuestion.options" :key="opt.key">
+                <label @click="toggleKompleks(currentQuestion.id, opt.key)" 
+                  :class="hasOptionKompleks(currentQuestion.id, opt.key) ? 'border-cyan-400 bg-cyan-950/60 text-cyan-200' : 'border-gray-800 bg-gray-900/40 text-gray-300'"
+                  class="flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-all">
+                  <span class="font-tech font-bold uppercase text-cyan-400" x-text="opt.key"></span>
+                  <span x-text="opt.text" class="flex-1"></span>
+                </label>
+              </template>
+            </div>
+          </template>
+
+          <!-- TIPE 3: PILIHAN GANDA KATEGORI (Benar / Salah per Pernyataan) -->
+          <template x-if="currentQuestion.type === 'pg_kategori'">
+            <div class="space-y-3 pt-2">
+              <template x-for="(stmt, idx) in currentQuestion.statements" :key="idx">
+                <div class="bg-gray-900/70 p-3 rounded-xl border border-gray-800 space-y-2">
+                  <p class="text-xs text-gray-200" x-text="(idx+1) + '. ' + stmt"></p>
+                  <div class="flex gap-2">
+                    <button @click="setKategori(currentQuestion.id, idx, 'Benar')" 
+                      :class="getKategori(currentQuestion.id, idx) === 'Benar' ? 'bg-emerald-600 text-white border-emerald-400' : 'bg-gray-950 text-gray-400 border-gray-800'"
+                      class="flex-1 py-1 text-xs rounded-lg border font-bold">Benar</button>
+                    <button @click="setKategori(currentQuestion.id, idx, 'Salah')" 
+                      :class="getKategori(currentQuestion.id, idx) === 'Salah' ? 'bg-rose-600 text-white border-rose-400' : 'bg-gray-950 text-gray-400 border-gray-800'"
+                      class="flex-1 py-1 text-xs rounded-lg border font-bold">Salah</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+        </div>
+
+        <!-- NAVIGATION CONTROLS -->
+        <div class="flex justify-between gap-3">
+          <button @click="prevQuestion()" :disabled="currentIdx === 0" class="flex-1 bg-gray-900 border border-gray-700 text-gray-300 py-2.5 rounded-xl text-xs font-bold disabled:opacity-30">SEBELUMNYA</button>
+          
+          <template x-if="currentIdx < questions.length - 1">
+            <button @click="nextQuestion()" class="flex-1 bg-cyan-600 border border-cyan-400 text-white py-2.5 rounded-xl text-xs font-bold">SELANJUTNYA</button>
+          </template>
+
+          <template x-if="currentIdx === questions.length - 1">
+            <button @click="submitExam()" class="flex-1 bg-emerald-600 border border-emerald-400 text-white py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-emerald-900/40">SELESAI & KIRIM</button>
+          </template>
+        </div>
+
+      </div>
+    </template>
+
+    <!-- FINISH SCREEN -->
+    <template x-if="screen === 'finish'">
+      <div class="glass-card rounded-2xl p-6 text-center space-y-4 border border-emerald-500/40">
+        <div class="inline-block p-4 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-400">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <h2 class="font-tech text-xl text-emerald-300 font-bold">UJIAN SELESAI</h2>
+        <p class="text-xs text-gray-300">Jawaban Anda telah berhasil dienkripsi dan dikirim ke server Spreadsheet.</p>
+        <div class="bg-gray-900/80 p-4 rounded-xl text-center space-y-1 border border-gray-800">
+          <p class="text-xs text-gray-400">Estimasi Skor Pilihan Ganda Tunggal:</p>
+          <p class="font-tech text-3xl font-bold text-cyan-400" x-text="calculatedScore + ' / 100'"></p>
+        </div>
+      </div>
+    </template>
+
+  </main>
+
+  <footer class="text-center py-3 text-[10px] text-gray-600 border-t border-gray-900">
+    SMAN 1 MOJO &copy; CBT SYSTEM PAI X
+  </footer>
+
+  <script>
+    function appData() {
+      return {
+        screen: 'login',
+        loginRole: 'siswa',
+        webhookUrl: 'https://script.google.com/macros/s/AKfycbyCFto8ozL_EbdcRkhPc9xj3XQlCr9tUCv3a9JgHHKhIzw_dLjXen7zu8e5x2Ogo7GMUA/exec',
+        adminPass: 'admin123',
+        newAdminPass: '',
+        user: null,
+        kelasList: ['X-1', 'X-2', 'X-3', 'X-4', 'X-5', 'X-6', 'X-7', 'X-8', 'X-9', 'X-10'],
+        form: { nama: '', kelas: '', passSiswa: '', passAdmin: '' },
+        config: { durasiMenit: 60 },
+        timer: 3600,
+        timerInterval: null,
+        currentIdx: 0,
+        answers: {},
+        calculatedScore: 0,
+
+        // BANK SOAL HOTS PAI KELAS X (25 SOAL: 10 PG Tunggal, 10 PG Kompleks, 5 Kategori)
+        // Catatan: Sesuai instruksi, opsi e dieksklusikan dari pilihan d (A, B, C, E)
+        questions: [
+          // --- 10 SOAL PG TUNGGAL ---
+          {
+            id: 'q1', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Di era digital, persaingan kerja semakin ketat. Ahmad selalu memperbarui keahlian teknisnya sambil berniat ibadah agar dapat memberikan manfaat bagi masyarakat. Sikap Ahmad mencerminkan keterkaitan antara...',
+            options: [
+              { key: 'a', text: 'Kompetisi dalam kebaikan dan etos kerja Islam' },
+              { key: 'b', text: 'Riya dan sum\'ah dalam pekerjaan' },
+              { key: 'c', text: 'Syu\'abul iman cabang perbuatan semata' },
+              { key: 'e', text: 'Takabur atas kemampuan teknologi' }
+            ],
+            key: 'a'
+          },
+          {
+            id: 'q2', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Seseorang mengunggah ibadah sedekahnya di media sosial dengan harapan mendapat banyak ucapan pujian dan pengakuan sebagai dermawan. Perbuatan tersebut tergolong penyakit hati...',
+            options: [
+              { key: 'a', text: 'Hasad' },
+              { key: 'b', text: 'Sum\'ah' },
+              { key: 'c', text: 'Takabur' },
+              { key: 'e', text: 'Hidup berfoya-foya' }
+            ],
+            key: 'b'
+          },
+          {
+            id: 'q3', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Syu\'abul Iman dibagi menjadi tiga ranah utama. Ranah yang berkaitan erat dengan niat, keyakinan hati, dan keikhlasan adalah...',
+            options: [
+              { key: 'a', text: 'Ma\'rifatun bil qalbi' },
+              { key: 'b', text: 'Iqrarun bil lisan' },
+              { key: 'c', text: 'Amalun bil arkan' },
+              { key: 'e', text: 'Muamalah bil maal' }
+            ],
+            key: 'a'
+          },
+          {
+            id: 'q4', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Seorang pengusaha muda membelanjakan hartanya untuk membeli barang-barang mewah hanya demi memamerkan status sosial, padahal banyak tetangganya membutuhkan. Sikap ini adalah bentuk...',
+            options: [
+              { key: 'a', text: 'Israf dan Tabdzir (Berfoya-foya)' },
+              { key: 'b', text: 'Etos kerja tinggi' },
+              { key: 'c', text: 'Kompetisi dalam kebaikan' },
+              { key: 'e', text: 'Syukur nikmat' }
+            ],
+            key: 'a'
+          },
+          {
+            id: 'q5', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Ketika temannya mendapatkan beasiswa studi ke luar negeri, Rian merasa tidak senang dan berharap keberhasilan temannya tersebut dibatalkan. Sikap Rian merupakan contoh dari...',
+            options: [
+              { key: 'a', text: 'Riya\'' },
+              { key: 'b', text: 'Takabur' },
+              { key: 'c', text: 'Hasad' },
+              { key: 'e', text: 'Sum\'ah' }
+            ],
+            key: 'c'
+          },
+          {
+            id: 'q6', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Pernyataan berikut yang paling tepat menggambarkan prinsip "Fastabiqul Khairat" dalam kehidupan sekolah adalah...',
+            options: [
+              { key: 'a', text: 'Belajar giat hanya ketika mendekati ujian sekolah' },
+              { key: 'b', text: 'Membantu teman belajar agar seluruh kelas meraih prestasi bersama' },
+              { key: 'c', text: 'Menyembunyikan ilmu agar menjadi yang terpandai sendirian' },
+              { key: 'e', text: 'Menghalalkan segala cara demi nilai tertinggi' }
+            ],
+            key: 'b'
+          },
+          {
+            id: 'q7', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Salah satu cabang iman terkait lisan (iqrarun bil lisan) yang wajib dijaga seorang muslim di media sosial adalah...',
+            options: [
+              { key: 'a', text: 'Menjaga kebersihan lingkungan' },
+              { key: 'b', text: 'Menjaga hati dari rasa iri' },
+              { key: 'c', text: 'Menjauhi ucapan hoaks dan ghibah digital' },
+              { key: 'e', text: 'Tawakkal saat menghadapi ujian' }
+            ],
+            key: 'c'
+          },
+          {
+            id: 'q8', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Merasa diri lebih mulia, pintar, atau lebih suci dibandingkan orang lain sehingga meremehkan sesama merupakan definisi dari...',
+            options: [
+              { key: 'a', text: 'Takabur (Sombong)' },
+              { key: 'b', text: 'Riya\'' },
+              { key: 'c', text: 'Sum\'ah' },
+              { key: 'e', text: 'Hasad' }
+            ],
+            key: 'a'
+          },
+          {
+            id: 'q9', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Ciri etos kerja seorang muslim sesuai ajaran Islam adalah...',
+            options: [
+              { key: 'a', text: 'Bekerja tanpa kenal waktu hingga melupakan ibadah ritual' },
+              { key: 'b', text: 'Bekerja secara profesional, jujur, dan berorientasi ibadah' },
+              { key: 'c', text: 'Mengandalkan hasil tanpa melakukan perencanaan matang' },
+              { key: 'e', text: 'Hanya bekerja jika ada pengawasan dari atasan' }
+            ],
+            key: 'b'
+          },
+          {
+            id: 'q10', type: 'pg_tunggal', typeLabel: 'PG Tunggal',
+            prompt: 'Cara paling efektif untuk menghindarkan diri dari sifat berfoya-foya (frivolous living) di era modern adalah...',
+            options: [
+              { key: 'a', text: 'Menutup diri penuh dari kemajuan teknologi' },
+              { key: 'b', text: 'Menerapkan gaya hidup bersahaja (qana\'ah) dan literasi keuangan syariah' },
+              { key: 'c', text: 'Menyimpan seluruh uang tanpa pernah bersedekah' },
+              { key: 'e', text: 'Membeli produk mahal untuk investasi gengsi' }
+            ],
+            key: 'b'
+          },
+
+          // --- 10 SOAL PG KOMPLEKS ---
+          {
+            id: 'q11', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Pilihlah tindakan-tindakan yang mencerminkan Etos Kerja Tinggi berbasis nilai Syu\'abul Iman!',
+            options: [
+              { key: 'a', text: 'Menyelesaikan tugas tepat waktu dengan standar kualitas terbaik' },
+              { key: 'b', text: 'Jujur dalam bertransaksi meskipun tidak ada yang melihat' },
+              { key: 'c', text: 'Menunda pengerjaan tugas sampai mendekati batas waktu' },
+              { key: 'e', text: 'Disiplin dan bertanggung jawab atas amanah pekerjaan' }
+            ]
+          },
+          {
+            id: 'q12', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Manakah dari opsi berikut yang merupakan bahaya dari sifat Hasad dan Takabur?',
+            options: [
+              { key: 'a', text: 'Merusak tatanan persaudaraan dan silaturahmi' },
+              { key: 'b', text: 'Menghapus pahala kebaikan seperti api membakar kayu bakar' },
+              { key: 'c', text: 'Meningkatkan ketenangan jiwa dan pikiran' },
+              { key: 'e', text: 'Menghalangi seseorang masuk surga jika ada kesombongan sekecil zarrah' }
+            ]
+          },
+          {
+            id: 'q13', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Yang termasuk dalam pembagian kelompok Syu\'abul Iman adalah...',
+            options: [
+              { key: 'a', text: 'Cabang iman yang berkaitan dengan niat dan akidah hati' },
+              { key: 'b', text: 'Cabang iman yang berkaitan dengan lisan dan ucapan' },
+              { key: 'c', text: 'Cabang iman yang berkaitan dengan seluruh anggota badan' },
+              { key: 'e', text: 'Cabang iman yang berkaitan dengan status sosial' }
+            ]
+          },
+          {
+            id: 'q14', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Pilih bentuk-bentuk perilaku Riya\' dan Sum\'ah di lingkungan sekolah!',
+            options: [
+              { key: 'a', text: 'Sengaja mengeraskan bacaan Al-Qur\'an agar dipuji guru' },
+              { key: 'b', text: 'Ikhlas merapikan kelas saat tidak ada orang lain' },
+              { key: 'c', text: 'Menceritakan kebaikan sedekahnya di grup WhatsApp kelas' },
+              { key: 'e', text: 'Membantu teman hanya jika ada kamera merekam' }
+            ]
+          },
+          {
+            id: 'q15', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Pernyataan berikut yang menggambarkan semangat Fastabiqul Khairat adalah...',
+            options: [
+              { key: 'a', text: 'Segera bertobat ketika menyadari kesalahan' },
+              { key: 'b', text: 'Menjadi pelopor dalam kegiatan sosial kemanusiaan' },
+              { key: 'c', text: 'Menunggu orang lain berbuat baik baru ikut serta' },
+              { key: 'e', text: 'Konsisten menjaga shalat berjamaah di awal waktu' }
+            ]
+          },
+          {
+            id: 'q16', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Dampak negatif dari gaya hidup berfoya-foya (Tabdzir/Israf) meliputi...',
+            options: [
+              { key: 'a', text: 'Memicu sifat kikir dan kesenjangan sosial' },
+              { key: 'b', text: 'Menimbulkan beban finansial serta utang berlebih' },
+              { key: 'c', text: 'Menjadikan hati selalu bersyukur dan tenang' },
+              { key: 'e', text: 'Menjauhkan diri dari keberkahan harta' }
+            ]
+          },
+          {
+            id: 'q17', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Langkah-langkah untuk menghindari sifat Hasad dalam diri antara lain...',
+            options: [
+              { key: 'a', text: 'Mendoakan kebaikan bagi orang yang mendapatkan nikmat' },
+              { key: 'b', text: 'Mengembangkan sikap qana\'ah dan memperbanyak rasa syukur' },
+              { key: 'c', text: 'Selalu membandingkan keberhasilan diri dengan orang lain' },
+              { key: 'e', text: 'Mengingat bahwa rezeki setiap orang sudah diatur Allah SWT' }
+            ]
+          },
+          {
+            id: 'q18', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Contoh penerapan Syu\'abul Iman ranah Lisan adalah...',
+            options: [
+              { key: 'a', text: 'Membaca Al-Qur\'an dan berdzikir' },
+              { key: 'b', text: 'Menjawab salam dan memberikan nasihat kebaikan' },
+              { key: 'c', text: 'Meyakini dalam hati keberadaan malaikat' },
+              { key: 'e', text: 'Menjauhi perkataan dusta dan adu domba' }
+            ]
+          },
+          {
+            id: 'q19', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Prinsip utama dalam bekerja menurut ajaran Islam meliputi...',
+            options: [
+              { key: 'a', text: 'Niat ikhlas karena Allah SWT' },
+              { key: 'b', text: 'Halal dalam cara dan jenis pekerjaan' },
+              { key: 'c', text: 'Mencari keuntungan sebesar-besarnya walau merugikan orang' },
+              { key: 'e', text: 'Menjaga amanah dan profesionalisme (Itqan)' }
+            ]
+          },
+          {
+            id: 'q20', type: 'pg_kompleks', typeLabel: 'PG Kompleks',
+            prompt: 'Ciri-ciri orang yang memiliki sifat Takabur adalah...',
+            options: [
+              { key: 'a', text: 'Menolak kebenaran yang datang dari orang lain' },
+              { key: 'b', text: 'Meremehkan dan memandang rendah sesama manusia' },
+              { key: 'c', text: 'Senang mendengarkan kritik dan saran' },
+              { key: 'e', text: 'Bangga berlebihan atas status sosial dan keturunan' }
+            ]
+          },
+
+          // --- 5 SOAL PILIHAN GANDA KATEGORI (Benar / Salah) ---
+          {
+            id: 'q21', type: 'pg_kategori', typeLabel: 'PG Kategori',
+            prompt: 'Tentukan kategori BENAR atau SALAH untuk setiap pernyataan terkait Etos Kerja dan Kompetisi Kebaikan!',
+            statements: [
+              'Bekerja keras hingga melupakan Shalat Fardhu tetap bernilai ibadah tinggi.',
+              'Kompetisi dalam kebaikan harus didasari niat ikhlas, bukan untuk menjatuhkan lawan.',
+              'Etos kerja dalam Islam hanya berlaku untuk urusan ibadah di dalam masjid.'
+            ]
+          },
+          {
+            id: 'q22', type: 'pg_kategori', typeLabel: 'PG Kategori',
+            prompt: 'Tentukan kategori BENAR atau SALAH terkait konsep Syu\'abul Iman!',
+            statements: [
+              'Syu\'abul Iman memiliki 77 cabang yang mencakup hati, lisan, dan anggota badan.',
+              'Menyingkirkan duri atau gangguan dari jalanan tidak termasuk bagian dari iman.',
+              'Mengakui kebenaran Islam dalam hati sudah cukup tanpa perlu diwujudkan dengan perbuatan.'
+            ]
+          },
+          {
+            id: 'q23', type: 'pg_kategori', typeLabel: 'PG Kategori',
+            prompt: 'Tentukan kategori BENAR atau SALAH mengenai Riya\' dan Sum\'ah!',
+            statements: [
+              'Riya\' terjadi ketika amal ibadah dilakukan untuk dilihat orang lain.',
+              'Sum\'ah adalah beramal agar kebaikannya didengar dan dipuji oleh publik.',
+              'Riya\' kecil tidak berpengaruh apa-apa terhadap kualitas pahala ibadah.'
+            ]
+          },
+          {
+            id: 'q24', type: 'pg_kategori', typeLabel: 'PG Kategori',
+            prompt: 'Tentukan kategori BENAR atau SALAH mengenai Sifat Hasad dan Takabur!',
+            statements: [
+              'Hasad adalah perasaan senang melihat orang lain tertimpa musibah.',
+              'Iri hati terhadap kebaikan orang lain yang memotivasi diri (Ghibthah) diperbolehkan.',
+              'Sifat Takabur adalah hal wajar bagi seseorang yang memiliki prestasi tinggi.'
+            ]
+          },
+          {
+            id: 'q25', type: 'pg_kategori', typeLabel: 'PG Kategori',
+            prompt: 'Tentukan kategori BENAR atau SALAH mengenai Menghindari Gaya Hidup Foya-foya!',
+            statements: [
+              'Membeli barang berlebih yang tidak dibutuhkan merupakan bentuk perilaku Israf.',
+              'Hidup sederhan/qana\'ah berarti harus hidup serba miskin dan menderita.',
+              'Gemar bersedekah adalah benteng utama dari sifat pembaziran.'
+            ]
+          }
+        ],
+
+        get currentQuestion() {
+          return this.questions[this.currentIdx];
+        },
+
+        handleLogin() {
+          if (this.loginRole === 'admin') {
+            if (this.form.passAdmin === this.adminPass) {
+              this.user = { role: 'admin', nama: 'Administrator' };
+              this.screen = 'admin';
+            } else {
+              alert('Password Admin Salah!');
+            }
+          } else {
+            if (!this.form.nama || !this.form.kelas) {
+              alert('Lengkapi Nama dan Kelas!');
+              return;
+            }
+            this.user = { role: 'siswa', nama: this.form.nama, kelas: this.form.kelas };
+            this.screen = 'ready';
+          }
+        },
+
+        updateAdminPass() {
+          if (this.newAdminPass.trim().length < 4) {
+            alert('Password minimal 4 karakter');
+            return;
+          }
+          this.adminPass = this.newAdminPass;
+          alert('Password Admin berhasil diubah!');
+          this.newAdminPass = '';
+        },
+
+        startExam() {
+          this.screen = 'exam';
+          this.timer = this.config.durasiMenit * 60;
+          this.startTimer();
+        },
+
+        startTimer() {
+          this.timerInterval = setInterval(() => {
+            if (this.timer > 0) {
+              this.timer--;
+            } else {
+              clearInterval(this.timerInterval);
+              this.submitExam();
+            }
+          }, 1000);
+        },
+
+        formatTime(seconds) {
+          const m = Math.floor(seconds / 60);
+          const s = seconds % 60;
+          return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        },
+
+        isAnswered(idx) {
+          const q = this.questions[idx];
+          const ans = this.answers[q.id];
+          if (!ans) return false;
+          if (Array.isArray(ans)) return ans.length > 0;
+          if (typeof ans === 'object') return Object.keys(ans).length === q.statements.length;
+          return true;
+        },
+
+        nextQuestion() {
+          if (this.currentIdx < this.questions.length - 1) this.currentIdx++;
+        },
+
+        prevQuestion() {
+          if (this.currentIdx > 0) this.currentIdx--;
+        },
+
+        // Helper PG Kompleks
+        toggleKompleks(qId, key) {
+          if (!this.answers[qId]) this.answers[qId] = [];
+          const idx = this.answers[qId].indexOf(key);
+          if (idx > -1) {
+            this.answers[qId].splice(idx, 1);
+          } else {
+            this.answers[qId].push(key);
+          }
+        },
+
+        hasOptionKompleks(qId, key) {
+          return this.answers[qId] && this.answers[qId].includes(key);
+        },
+
+        // Helper PG Kategori
+        setKategori(qId, stmtIdx, val) {
+          if (!this.answers[qId]) this.answers[qId] = {};
+          this.answers[qId][stmtIdx] = val;
+        },
+
+        getKategori(qId, stmtIdx) {
+          return this.answers[qId] ? this.answers[qId][stmtIdx] : null;
+        },
+
+        calculateScore() {
+          let score = 0;
+          // Hitung nilai PG Tunggal (10 soal x 10)
+          this.questions.filter(q => q.type === 'pg_tunggal').forEach(q => {
+            if (this.answers[q.id] === q.key) score += 10;
+          });
+          this.calculatedScore = score;
+        },
+
+        submitExam() {
+          clearInterval(this.timerInterval);
+          this.calculateScore();
+
+          // Kirim data jawaban ke Google Sheets Webhook
+          const payload = {
+            timestamp: new Date().toISOString(),
+            nama: this.user.nama,
+            kelas: this.user.kelas,
+            skorPGI: this.calculatedScore,
+            rawJawaban: JSON.stringify(this.answers)
+          };
+
+          fetch(this.webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(() => {
+            console.log('Data tersimpan ke Spreadsheet via Webhook');
+          }).catch(err => {
+            console.error('Gagal kirim Webhook:', err);
+          });
+
+          this.screen = 'finish';
+        },
+
+        logout() {
+          clearInterval(this.timerInterval);
+          this.user = null;
+          this.screen = 'login';
+          this.answers = {};
+        }
+      }
+    }
+  </script>
+</body>
+</html>
